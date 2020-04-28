@@ -8,7 +8,7 @@ import torch
 from torch.utils.tensorboard import SummaryWriter
 from torch.optim import Adam  
 
-from src.models.SOLCNN import SOLCNN
+from src.models.AttentionModel import AttentionModel
 
 from src.utils.training import train, get_datasets
 from src.utils.parse_args import parse_args

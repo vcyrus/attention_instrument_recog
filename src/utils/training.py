@@ -7,7 +7,7 @@ from torch.utils.data import DataLoader, random_split
 
 from src.models.SOLCNN import SOLCNN
 
-from src.datasets.SOLDataset import SOLDataset
+from src.datasets.OpenMicDataset import OpenMicDataset
 
 from src.utils.EarlyStopping import EarlyStopping
 
