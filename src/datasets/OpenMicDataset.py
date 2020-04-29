@@ -33,7 +33,7 @@ class OpenMicDataset(Dataset):
         np.load = np_load_old
 
         self.features = openmic['X']
-        self.labels = openmic['Y_true']
+        self.labels = openmic['Y_mask']
         self.sample_keys = openmic['sample_key']
 
     def __getitem__(self, idx):
