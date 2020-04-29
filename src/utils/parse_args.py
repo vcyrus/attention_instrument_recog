@@ -49,7 +49,7 @@ def parse_args():
     )
     parser.add_argument(
         "--dropout_rate",    
-        default=0.3,
+        default=0.6,
         type=float,
         help="Dropout rate applied to fully connected layers"
     )

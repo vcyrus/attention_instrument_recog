@@ -11,7 +11,7 @@ class AttentionModel(Model):
                 n_classes=20, 
                 input_dim=128, 
                 embedding_dim=128, 
-                temporal_dim=10
+                temporal_dim=10,
                 dropout_rate=0.6):
         super(AttentionModel, self).__init__()
 
@@ -41,7 +41,7 @@ class AttentionModel(Model):
 
         return y
 
-def AttentionLayer(nn.Module):
+class AttentionLayer(nn.Module):
     def __init__(self, n_dims_in, n_dims_out):
         super(AttentionModel, self).__init__()
 
