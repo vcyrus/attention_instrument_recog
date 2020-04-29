@@ -48,6 +48,6 @@ class AttentionLayer(nn.Module):
         self.score = nn.Linear(n_dims_in, n_dims_out)
     
     def forward(self, batch):
-        z = self.score(torch.transpose(embedding, 1, 2))
+        score = nn.Softmax(self.score(torch.transpose(embedding, 1, 2)))
         
-        return z
+        return score
