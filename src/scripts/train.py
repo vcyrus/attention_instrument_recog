@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 
 import torch
 import torch.nn as nn
@@ -16,15 +17,19 @@ from src.utils.test import evaluate
 
 if __name__ == "__main__":
     args = parse_args()
+
+    df = pd.read_csv(os.path.join(args.openmic_path, 
+                                  'openmic-2018-aggregated-labels.csv'))
+    label_to_idx = {label: idx 
+              for idx, label in enumerate(np.sort(df['instrument'].unique()))}
+
     
-    datasets, label_to_int = get_datasets(
-                  args.audio_path, 
-                  args.fs,
-                  args.audio_len,
+    datasets = get_datasets(
+                  args.openmic_path, 
                   args.val_split,
                   args.test_split
               )
-    n_classes = len(label_to_int)
+    n_classes = len(label_to_idx)
 
     writer = SummaryWriter()
 
@@ -32,19 +37,11 @@ if __name__ == "__main__":
                                       torch.cuda.is_available() \
                                       else 'cpu')
     print('Device: {}'.format(cuda_device))
-    win_length = int((args.win_length / 1000) * args.fs)
-    hop_length = int((args.hop_length / 1000) * args.fs)
-    model = SOLCNN(args.fs, 
-                  win_length, 
-                  hop_length, 
-                  args.n_bins, 
-                  n_classes, 
-                  args.dropout_rate, 
-                  args.audio_len,
-                  transform=args.transform)  
+
+    model = AttentionModel()
 
     optimizer = Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.BCELoss(reduction='sum')
 
     model, criterion = train(
         datasets, 
@@ -52,7 +49,6 @@ if __name__ == "__main__":
         args.n_epochs,
         args.lr,
         cuda_device,
-        args.fs,
         model,
         optimizer,
         writer,
@@ -74,5 +70,5 @@ if __name__ == "__main__":
     confusions = evaluate(model, 
                           cuda_device, 
                           datasets['test'], 
-                          label_to_int, 
+                          label_to_idx, 
                           criterion)

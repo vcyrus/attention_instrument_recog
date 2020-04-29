@@ -5,8 +5,6 @@ import torch.nn as nn
 from torch.optim import Adam, lr_scheduler
 from torch.utils.data import DataLoader, random_split
 
-from src.models.SOLCNN import SOLCNN
-
 from src.datasets.OpenMicDataset import OpenMicDataset
 
 from src.utils.EarlyStopping import EarlyStopping
@@ -16,7 +14,6 @@ def train(datasets,
           n_epochs, 
           lr, 
           cuda_device, 
-          fs,
           model, 
           optimizer, 
           writer, 
@@ -117,13 +114,8 @@ def log(epoch, n_epochs, phase, loss, writer):
     
     writer.add_scalar('Loss/{}'.format(phase), loss, epoch)
 
-def get_datasets(path, fs, audio_len_s, val_split, test_split):
-    # SOL dataset label, assumes subdirectories are labels
-    label_to_int = {
-      label: idx for idx, label in enumerate(os.listdir(path))
-    }
-    # get file name bases from csv
-    dataset = SOLDataset(path, label_to_int, fs=fs, audio_len=audio_len_s)
+def get_datasets(path, val_split, test_split):
+    dataset = OpenMicDataset(path)
 
     dataset_len = len(dataset)
     n_val = int(val_split * dataset_len)
@@ -133,4 +125,4 @@ def get_datasets(path, fs, audio_len_s, val_split, test_split):
     train_data, val_data, test_data = random_split(dataset, [n_train, n_val, n_test])
 
     datasets = {'train': train_data, 'val': val_data, 'test': test_data}
-    return datasets, label_to_int
+    return datasets

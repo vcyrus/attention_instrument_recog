@@ -3,37 +3,7 @@ from argparse import ArgumentParser
 def parse_args():
     parser = ArgumentParser()
     parser.add_argument(
-        "audio_path", type=str, help="path to dataset"
-    ),
-    parser.add_argument(
-        "--win_length", 
-        default=80, 
-        type=int, 
-        help="Spectrogram analysis window length (milliseconds)"
-    ),
-    parser.add_argument(
-        "--hop_length", 
-        default=20, 
-        type=int, 
-        help="Spectrogram analysis window hop length (milliseconds)"
-    ),
-    parser.add_argument(             
-        "--n_bins", 
-        default=128, 
-        type=int, 
-        help="Number of freq bins"
-    ),
-    parser.add_argument(
-        "-fs", 
-        default=22050, 
-        type=int, 
-        help="Audio resampling rate"
-    ),
-    parser.add_argument(
-        "--audio_len", 
-        default=1, 
-        type=float, 
-        help="Input audio length in seconds"
+        "openmic_path", type=str, help="path to openmic-2018.npz file"
     ),
     parser.add_argument(
         "--batch_size", 
@@ -94,11 +64,5 @@ def parse_args():
         default=5,
         type=int,
         help="Early stopping patience"
-    )
-    parser.add_argument(
-        "-transform",
-        default='mel_spec',
-        type=str,
-        help="Audio transformation, mel_spec or cqt"
     )
     return parser.parse_args()  
