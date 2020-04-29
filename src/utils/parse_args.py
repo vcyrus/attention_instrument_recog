@@ -7,7 +7,7 @@ def parse_args():
     ),
     parser.add_argument(
         "--batch_size", 
-        default=1, 
+        default=128, 
         type=int, 
         help="training batch size"
     ),
@@ -25,13 +25,13 @@ def parse_args():
     ),
     parser.add_argument(
         "--n_epochs",
-        default=10,
+        default=250,
         type=int,
         help="Number of training epochs"
     ),
     parser.add_argument(
         "-lr",
-        default=0.001, 
+        default=0.00001, 
         type=float,
         help="Optimizer learning rate"
     ),
