@@ -37,7 +37,11 @@ class OpenMicDataset(Dataset):
         self.sample_keys = openmic['sample_key']
 
     def __getitem__(self, idx):
-        raise NotImplementedError
+        sample = {
+            "features": self.features[idx],
+            "labels": self.labels[idx]
+        }
+        return sample
 
     def __len__(self):
         return len(self.features)
