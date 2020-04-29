@@ -65,4 +65,10 @@ def parse_args():
         type=int,
         help="Early stopping patience"
     )
+    parser.add_argument(
+        "--embedding_dim",
+        default=128,
+        type=int,
+        help="Number of units per embedding layer"
+    )
     return parser.parse_args()  

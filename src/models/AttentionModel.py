@@ -19,13 +19,16 @@ class AttentionModel(Model):
         self.fc2 = nn.Linear(embedding_dim, embedding_dim)
         self.fc3 = nn.Linear(embedding_dim, embedding_dim)
 
-        self.attn = AttentionLayer(temporal_dim, n_classes)
-        self.pred = nn.Linear(embedding_dim, n_classes)
+        self.attn = AttentionLayer(embedding_dim, n_classes)
+        self.score = nn.Linear(embedding_dim, n_classes)
         
         self.dropout = nn.Dropout(dropout_rate)
-        self.bn1 = nn.BatchNorm1d(embedding_dim)
-        self.bn2 = nn.BatchNorm1d(embedding_dim)
-        self.bn3 = nn.BatchNorm1d(embedding_dim)
+        self.bn1 = nn.BatchNorm1d(temporal_dim)
+        self.bn2 = nn.BatchNorm1d(temporal_dim)
+        self.bn3 = nn.BatchNorm1d(temporal_dim)
+
+
+        self.n_classes = n_classes
 
     def forward(self, batch):
         z = self.dropout(self.bn1(F.relu(self.fc1(batch))))
@@ -34,20 +37,20 @@ class AttentionModel(Model):
 
         embedding = torch.add(batch, z)
 
-        score = self.attn(torch.tranpose(embedding, 1, 2))
-        pred = self.pred(embedding)
+        attn_weights = self.attn(embedding)
+        score = self.score(embedding)
 
-        y = nn.Sigmoid(torch.mul(score, pred))
+        score = torch.sum(torch.mul(attn_weights, score), dim=1)
+        import pdb; pdb.set_trace()
 
-        return y
+        return score.view((-1, self.n_classes))
 
 class AttentionLayer(nn.Module):
     def __init__(self, n_dims_in, n_dims_out):
-        super(AttentionModel, self).__init__()
-
-        self.score = nn.Linear(n_dims_in, n_dims_out)
+        super(AttentionLayer, self).__init__()
+        self.attn = nn.Linear(n_dims_in, n_dims_out)
     
-    def forward(self, batch):
-        score = nn.Softmax(self.score(torch.transpose(embedding, 1, 2)))
+    def forward(self, z):
+        weights = torch.matmul(z, self.attn.weight.t())
         
-        return score
+        return F.softmax(weights, dim=2)

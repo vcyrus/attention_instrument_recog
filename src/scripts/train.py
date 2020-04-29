@@ -22,7 +22,6 @@ if __name__ == "__main__":
                                   'openmic-2018-aggregated-labels.csv'))
     label_to_idx = {label: idx 
               for idx, label in enumerate(np.sort(df['instrument'].unique()))}
-
     
     datasets = get_datasets(
                   args.openmic_path, 
@@ -38,10 +37,12 @@ if __name__ == "__main__":
                                       else 'cpu')
     print('Device: {}'.format(cuda_device))
 
-    model = AttentionModel()
+    model = AttentionModel(n_classes, 
+                          embedding_dim=args.embedding_dim,
+                          dropout_rate=args.dropout_rate)
 
     optimizer = Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
-    criterion = nn.BCELoss(reduction='sum')
+    criterion = nn.BCEWithLogitsLoss(reduction='sum')
 
     model, criterion = train(
         datasets, 
@@ -53,7 +54,6 @@ if __name__ == "__main__":
         optimizer,
         writer,
         args.weight_decay, 
-        args.audio_len,
         criterion,
         args.patience,
     )
@@ -63,12 +63,5 @@ if __name__ == "__main__":
     if args.out_path:
         if not os.path.exists(args.out_path):
             os.mkdir(args.out_path)
-        path = os.path.join(args.out_path, 
-                          "model_{0}".format(args.transform))
+        path = os.path.join(args.out_path, "model")
         torch.save(model.state_dict(), path)
-
-    confusions = evaluate(model, 
-                          cuda_device, 
-                          datasets['test'], 
-                          label_to_idx, 
-                          criterion)

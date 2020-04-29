@@ -18,7 +18,6 @@ def train(datasets,
           optimizer, 
           writer, 
           weight_decay, 
-          audio_len_s, 
           criterion, 
           patience): 
     '''
@@ -28,15 +27,11 @@ def train(datasets,
       lr         -> float, learning rate
       use_cuda   -> bool, use gpu
       out_path   -> str, path to write the model to
-      fs         -> int, audio sampling rate
-      win_length -> int, feature extraction window length (ms)
-      hop_length -> int, feature extraction hop length (ms)
       n_bins     -> int, feature extraction number of mel bands
       n_classes  -> int, number of classification classes
       writer     -> torch.utils.tensorboard.SummaryWriter
       dropout_rate -> float, dropout rate for model
       weight_decay -> float, loss regularization weight decay
-      audio_len_s  -> int, length of the input audio in seconds
     '''
     params_train = {
         "batch_size": batch_size,
@@ -50,7 +45,6 @@ def train(datasets,
   
     model.to(cuda_device)
 
-    criterion = nn.CrossEntropyLoss()
     optimizer = Adam(model.parameters(), lr, weight_decay=weight_decay)
     scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, factor=0.3)
     early_stopping = EarlyStopping(patience=patience, verbose=True)
@@ -93,9 +87,9 @@ def run_epoch(model, criterion, optimizer, generator, cuda_device, phase=None):
     model = model.train() if phase =='train' else model.eval()
     for i, batch in enumerate(generator, 0):
         
-        X, y = batch["audio"], batch["label"]
-        X = X.to(device=cuda_device)
-        y = y.to(device=cuda_device)
+        X, y = batch["features"], batch["labels"]
+        X = X.to(device=cuda_device).float()
+        y = y.to(device=cuda_device).float()
 
         _y = model(X)
         loss = criterion(_y, y)
