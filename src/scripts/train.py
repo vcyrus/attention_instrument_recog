@@ -42,7 +42,7 @@ if __name__ == "__main__":
                           dropout_rate=args.dropout_rate)
 
     optimizer = Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
-    criterion = nn.BCEWithLogitsLoss(reduction='sum')
+    criterion = nn.BCEWithLogitsLoss()
 
     model, criterion = train(
         datasets, 
