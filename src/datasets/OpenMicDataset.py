@@ -9,6 +9,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 
 import torchaudio
 
@@ -18,20 +19,19 @@ from sklearn.preprocessing import MinMaxScaler
 
 class OpenMicDataset(Dataset):
     '''
-        path: path to npz file
+        path: path to npz features file,
+        partition_path: path to OpenMic partition file e.g split01_train.csv
     '''
-    def __init__(self, path, scaler=None):
+    def __init__(self, path, partition_path=None):
         self.path = path
+        self.partition_path = partition_path
 
         self.load_openmic()
 
         # scale feature in range [0, 1], reshaping to 2d first
         self.features2d = self.features.reshape(-1, self.features.shape[2])
-        if scaler is None:
-            self.scaler = MinMaxScaler()
-            self.features2d = self.scaler.fit_transform(self.features2d)
-        else:
-            self.features2d = scaler.transform(self.features2d)
+        scaler = MinMaxScaler()
+        self.features2d = scaler.fit_transform(self.features2d)
 
         # reshape to original
         (n_samples, n_timesteps, n_features) = self.features.shape
@@ -40,6 +40,7 @@ class OpenMicDataset(Dataset):
                                                 n_features)
 
     def load_openmic(self):
+        # this hack allows np.load to load the 'sample_key' attribute
         np_load_old = np.load
         # modify the default parameters of np.load
         np.load = lambda *a,**k: np_load_old(*a, allow_pickle=True, **k)
@@ -48,9 +49,14 @@ class OpenMicDataset(Dataset):
 
         np.load = np_load_old
 
-        self.features = openmic['X']
-        self.labels = openmic['Y_mask']
         self.sample_keys = openmic['sample_key']
+        # load the partition csv
+        df = pd.read_csv(self.partition_path, header=None)
+        # get indexes of sample ids for the partition
+        partition_idxs = np.where(np.isin(df[0].tolist(), self.sample_keys))
+
+        self.features = openmic['X'][partition_idxs]
+        self.labels = openmic['Y_mask'][partition_idxs]
 
     def __getitem__(self, idx):
         sample = {

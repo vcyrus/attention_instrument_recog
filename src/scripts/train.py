@@ -11,7 +11,7 @@ from torch.optim import Adam
 
 from src.models.AttentionModel import AttentionModel
 
-from src.utils.training import train, get_datasets
+from src.utils.training import train, get_datasets_partitioned
 from src.utils.parse_args import parse_args
 from src.utils.test import evaluate
 
@@ -22,12 +22,15 @@ if __name__ == "__main__":
                                   'openmic-2018-aggregated-labels.csv'))
     label_to_idx = {label: idx 
               for idx, label in enumerate(np.sort(df['instrument'].unique()))}
-    
-    datasets = get_datasets(
-                  args.openmic_path, 
-                  args.val_split,
-                  args.test_split
-              )
+   
+    train_part_path = os.path.join(os.path.join(args.openmic_path, "partitions"),
+                                  "split01_train.csv")
+    test_part_path = os.path.join(os.path.join(args.openmic_path, "partitions"), 
+                                  "split01_test.csv")
+    datasets = get_datasets_partitioned(args.openmic_path, 
+                                        args.val_split,
+                                        train_part_path,
+                                        test_part_path)
     n_classes = len(label_to_idx)
 
     writer = SummaryWriter()

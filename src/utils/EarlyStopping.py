@@ -40,7 +40,6 @@ class EarlyStopping:
             self.counter = 0
             self.save_checkpoint(val_loss, model)
             self.model_state = model.state_dict()
-            
 
     def save_checkpoint(self, val_loss, model):
         if self.verbose:

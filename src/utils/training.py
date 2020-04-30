@@ -68,8 +68,8 @@ def train(datasets,
     print('------------------------------')
     print('Finished training')
     print('------------------------------')
-    # Save the model
-
+    # load the best model from early stopping checkpoints
+    model.load_state_dict(early_stopping.model_state)
     return model, criterion
 
 def run_epoch(model, criterion, optimizer, generator, cuda_device, phase=None):
@@ -119,4 +119,22 @@ def get_datasets(path, val_split, test_split):
     train_data, val_data, test_data = random_split(dataset, [n_train, n_val, n_test])
 
     datasets = {'train': train_data, 'val': val_data, 'test': test_data}
+    return datasets
+
+def get_datasets_partitioned(path, 
+                            val_split, 
+                            train_partition_path, 
+                            test_partition_path):
+    train_dataset = OpenMicDataset(path, train_partition_path)
+    test_dataset = OpenMicDataset(path, test_partition_path)
+    
+    train_len = len(train_dataset)
+    n_val = int(val_split * train_len)
+    n_train = train_len - n_val
+     
+    train_dataset, val_dataset = random_split(train_dataset, [n_train, n_val])
+
+    datasets = {'train': train_dataset, 
+                'val': val_dataset, 
+                'test': test_dataset} 
     return datasets
