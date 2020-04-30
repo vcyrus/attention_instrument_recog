@@ -70,7 +70,7 @@ def train(datasets,
     print('------------------------------')
     # load the best model from early stopping checkpoints
     model.load_state_dict(early_stopping.model_state)
-    return model, criterion
+    return model
 
 def run_epoch(model, criterion, optimizer, generator, cuda_device, phase=None):
     '''

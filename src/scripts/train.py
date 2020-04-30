@@ -47,7 +47,7 @@ if __name__ == "__main__":
     optimizer = Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
     criterion = nn.BCEWithLogitsLoss()
 
-    model, criterion = train(
+    model = train(
         datasets, 
         args.batch_size,
         args.n_epochs,
@@ -61,6 +61,8 @@ if __name__ == "__main__":
         args.patience,
     )
     writer.close()
+
+    evaluate(model, device, dataset, label_to_int)
 
     # Save the model
     if args.out_path:

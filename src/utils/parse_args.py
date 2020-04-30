@@ -13,7 +13,7 @@ def parse_args():
     ),
     parser.add_argument(
         "--val_split",
-        default=0.1,
+        default=0.15,
         type=float,
         help="Fraction of data used for validation"
     ),
