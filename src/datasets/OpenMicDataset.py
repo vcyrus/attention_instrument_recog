@@ -14,14 +14,30 @@ import torchaudio
 
 from src.datasets.Dataset import Dataset
 
+from sklearn.preprocessing import MinMaxScaler
+
 class OpenMicDataset(Dataset):
     '''
         path: path to npz file
     '''
-    def __init__(self, path):
+    def __init__(self, path, scaler=None):
         self.path = path
 
         self.load_openmic()
+
+        # scale feature in range [0, 1], reshaping to 2d first
+        self.features2d = self.features.reshape(-1, self.features.shape[2])
+        if scaler is None:
+            self.scaler = MinMaxScaler()
+            self.features2d = self.scaler.fit_transform(self.features2d)
+        else:
+            self.features2d = scaler.transform(self.features2d)
+
+        # reshape to original
+        (n_samples, n_timesteps, n_features) = self.features.shape
+        self.features = self.features2d.reshape(n_samples, 
+                                                n_timesteps, 
+                                                n_features)
 
     def load_openmic(self):
         np_load_old = np.load

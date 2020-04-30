@@ -41,7 +41,6 @@ class AttentionModel(Model):
         score = self.score(embedding)
 
         score = torch.sum(torch.mul(attn_weights, score), dim=1)
-        import pdb; pdb.set_trace()
 
         return score.view((-1, self.n_classes))
 
