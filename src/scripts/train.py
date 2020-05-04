@@ -20,8 +20,8 @@ if __name__ == "__main__":
 
     df = pd.read_csv(os.path.join(args.openmic_path, 
                                   'openmic-2018-aggregated-labels.csv'))
-    label_to_idx = {label: idx 
-              for idx, label in enumerate(np.sort(df['instrument'].unique()))}
+    label_to_int = {label: i
+              for i, label in enumerate(np.sort(df['instrument'].unique()))}
    
     train_part_path = os.path.join(os.path.join(args.openmic_path, "partitions"),
                                   "split01_train.csv")
@@ -31,14 +31,14 @@ if __name__ == "__main__":
                                         args.val_split,
                                         train_part_path,
                                         test_part_path)
-    n_classes = len(label_to_idx)
+    n_classes = len(label_to_int)
 
     writer = SummaryWriter()
 
-    cuda_device = torch.device('cuda' if args.use_cuda and \
+    device = torch.device('cuda' if args.use_cuda and \
                                       torch.cuda.is_available() \
                                       else 'cpu')
-    print('Device: {}'.format(cuda_device))
+    print('Device: {}'.format(device))
 
     model = AttentionModel(n_classes, 
                           embedding_dim=args.embedding_dim,
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         args.batch_size,
         args.n_epochs,
         args.lr,
-        cuda_device,
+        device,
         model,
         optimizer,
         writer,
@@ -62,7 +62,7 @@ if __name__ == "__main__":
     )
     writer.close()
 
-    evaluate(model, device, dataset, label_to_int)
+    evaluate(model, device, datasets["test"], label_to_int)
 
     # Save the model
     if args.out_path:
