@@ -3,7 +3,7 @@ import torch.nn as nn
 
 import numpy as np
 
-from sklearn.metrics import accuracy_score
+from sklearn.metrics import accuracy_score, f1_score
 
 from torch.utils.data import DataLoader
 
@@ -34,7 +34,7 @@ def evaluate(model, device, dataset, label_to_int):
 
         y_true[i] = y[0]
         y_pred[i] = outputs[0]
+   
     
+    print("F1 Score: ", f1_score(y_true, y_pred, average='macro'))
     import pdb; pdb.set_trace()
-            
-    print("Accuracy: ", accuracy_score(y_true, y_pred))

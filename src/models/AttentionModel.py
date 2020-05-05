@@ -27,7 +27,6 @@ class AttentionModel(Model):
         self.bn2 = nn.BatchNorm1d(temporal_dim)
         self.bn3 = nn.BatchNorm1d(temporal_dim)
 
-
         self.n_classes = n_classes
 
     def forward(self, batch):
@@ -35,12 +34,12 @@ class AttentionModel(Model):
         z = self.dropout(self.bn2(F.relu(self.fc2(z))))
         z = self.dropout(self.bn3(F.relu(self.fc3(z))))
 
-        embedding = torch.add(batch, z)
+        # embedding = torch.add(batch, z)
+        embedding = z
 
-        attn_weights = self.attn(embedding)
-        score = self.score(embedding)
-
-        score = torch.sum(torch.mul(attn_weights, score), dim=1)
+        # attn_weights = self.attn(embedding)
+        score = torch.mean(self.score(embedding), dim=1)
+        # score = torch.sum(torch.mul(attn_weights, score), dim=1)
         return score.view((-1, self.n_classes))
 
 class AttentionLayer(nn.Module):
@@ -51,4 +50,4 @@ class AttentionLayer(nn.Module):
     def forward(self, z):
         weights = torch.matmul(z, self.attn.weight.t())
         
-        return F.softmax(weights, dim=2)
+        return F.softmax(weights, dim=1)

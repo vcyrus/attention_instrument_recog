@@ -27,10 +27,12 @@ if __name__ == "__main__":
                                   "split01_train.csv")
     test_part_path = os.path.join(os.path.join(args.openmic_path, "partitions"), 
                                   "split01_test.csv")
-    datasets = get_datasets_partitioned(args.openmic_path, 
+    labels_csv = os.path.join(args.openmic_path, 'openmic-2018-aggregated-labels.csv')
+    datasets, class_counts = get_datasets_partitioned(args.openmic_path, 
                                         args.val_split,
                                         train_part_path,
-                                        test_part_path)
+                                        test_part_path,
+                                        labels_csv)
     n_classes = len(label_to_int)
 
     writer = SummaryWriter()
@@ -45,7 +47,10 @@ if __name__ == "__main__":
                           dropout_rate=args.dropout_rate)
 
     optimizer = Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
-    criterion = nn.BCEWithLogitsLoss()
+
+    label_total = sum(class_counts)
+    weights = [w / label_total for w in class_counts]
+    criterion = nn.BCEWithLogitsLoss(torch.FloatTensor(weights).to(device))
 
     model = train(
         datasets, 
