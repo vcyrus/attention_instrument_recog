@@ -3,7 +3,6 @@
 
 ## TODO
 - [ ] implement partial BCE
-- [ ] evaluation
 
 ## Installation
 ### Downloading the dataset and cloning
