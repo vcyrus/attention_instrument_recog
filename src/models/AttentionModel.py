@@ -12,14 +12,17 @@ class AttentionModel(Model):
                 input_dim=128, 
                 embedding_dim=128, 
                 temporal_dim=10,
-                dropout_rate=0.6):
+                dropout_rate=0.6,
+                attention=True):
         super(AttentionModel, self).__init__()
 
         self.fc1 = nn.Linear(input_dim, embedding_dim)
         self.fc2 = nn.Linear(embedding_dim, embedding_dim)
         self.fc3 = nn.Linear(embedding_dim, embedding_dim)
-
-        self.attn = AttentionLayer(embedding_dim, n_classes)
+        
+        self.attention = attention
+        if attention:
+            self.attn = AttentionLayer(embedding_dim, n_classes)
         self.score = nn.Linear(embedding_dim, n_classes)
         
         self.dropout = nn.Dropout(dropout_rate)
@@ -30,16 +33,19 @@ class AttentionModel(Model):
         self.n_classes = n_classes
 
     def forward(self, batch):
-        z = self.dropout(self.bn1(F.relu(self.fc1(batch))))
-        z = self.dropout(self.bn2(F.relu(self.fc2(z))))
-        z = self.dropout(self.bn3(F.relu(self.fc3(z))))
+        z1 = self.dropout(F.relu(self.bn1(self.fc1(batch))))
+        z2 = self.dropout(F.relu(self.bn2(self.fc2(z1))))
+        z3 = self.fc3(z2)
+        embedding = self.dropout(F.relu(self.bn3(z3)))
+        residual = torch.add(batch, embedding)
+        
+        score = self.score(residual)
+        if self.attention:
+            attn_weights = self.attn(residual)
+            score = torch.sum(torch.mul(attn_weights, score), dim=1)
+        else:
+            score = torch.mean(self.score(score), dim=1)
 
-        # embedding = torch.add(batch, z)
-        embedding = z
-
-        # attn_weights = self.attn(embedding)
-        score = torch.mean(self.score(embedding), dim=1)
-        # score = torch.sum(torch.mul(attn_weights, score), dim=1)
         return score.view((-1, self.n_classes))
 
 class AttentionLayer(nn.Module):
@@ -50,4 +56,4 @@ class AttentionLayer(nn.Module):
     def forward(self, z):
         weights = torch.matmul(z, self.attn.weight.t())
         
-        return F.softmax(weights, dim=1)
+        return F.softmax(weights, dim=2)

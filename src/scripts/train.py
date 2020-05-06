@@ -10,6 +10,7 @@ from torch.utils.tensorboard import SummaryWriter
 from torch.optim import Adam  
 
 from src.models.AttentionModel import AttentionModel
+from src.models.PartialBCE import PartialBCE
 
 from src.utils.training import train, get_datasets_partitioned
 from src.utils.parse_args import parse_args
@@ -27,12 +28,10 @@ if __name__ == "__main__":
                                   "split01_train.csv")
     test_part_path = os.path.join(os.path.join(args.openmic_path, "partitions"), 
                                   "split01_test.csv")
-    labels_csv = os.path.join(args.openmic_path, 'openmic-2018-aggregated-labels.csv')
-    datasets, class_counts = get_datasets_partitioned(args.openmic_path, 
+    datasets = get_datasets_partitioned(args.openmic_path, 
                                         args.val_split,
                                         train_part_path,
-                                        test_part_path,
-                                        labels_csv)
+                                        test_part_path)
     n_classes = len(label_to_int)
 
     writer = SummaryWriter()
@@ -48,9 +47,8 @@ if __name__ == "__main__":
 
     optimizer = Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
 
-    label_total = sum(class_counts)
-    weights = [w / label_total for w in class_counts]
-    criterion = nn.BCEWithLogitsLoss(torch.FloatTensor(weights).to(device))
+#    criterion = nn.BCEWithLogitsLoss()
+    criterion = PartialBCE()
 
     model = train(
         datasets, 

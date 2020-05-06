@@ -87,12 +87,13 @@ def run_epoch(model, criterion, optimizer, generator, cuda_device, phase=None):
     model = model.train() if phase =='train' else model.eval()
     for i, batch in enumerate(generator, 0):
         
-        X, y = batch["features"], batch["labels"]
+        X, y, obs = batch["features"], batch["labels"], batch["observations"]
         X = X.to(device=cuda_device).float()
         y = y.to(device=cuda_device).float()
+        obs = obs.to(device=cuda_device)
 
         _y = model(X)
-        loss = criterion(_y, y)
+        loss = criterion(_y, y, obs)
         
         if phase == 'train':
             loss.backward()
@@ -124,11 +125,9 @@ def get_datasets(path, val_split, test_split):
 def get_datasets_partitioned(path, 
                             val_split, 
                             train_partition_path, 
-                            test_partition_path,
-                            labels_csv):
+                            test_partition_path):
     train_dataset = OpenMicDataset(path, 
-                                  train_partition_path, 
-                                  labels_csv=labels_csv)
+                                  train_partition_path)
     test_dataset = OpenMicDataset(path, 
                                   test_partition_path, 
                                   train_dataset.scaler)
@@ -136,12 +135,10 @@ def get_datasets_partitioned(path,
     train_len = len(train_dataset)
     n_val = int(val_split * train_len)
     n_train = train_len - n_val
-
-    class_counts = train_dataset.class_counts
      
     train_dataset, val_dataset = random_split(train_dataset, [n_train, n_val])
 
     datasets = {'train': train_dataset, 
                 'val': val_dataset, 
                 'test': test_dataset} 
-    return datasets, class_counts
+    return datasets

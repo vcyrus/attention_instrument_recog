@@ -22,10 +22,9 @@ class OpenMicDataset(Dataset):
         path: path to npz features file,
         partition_path: path to OpenMic partition file e.g split01_train.csv
     '''
-    def __init__(self, path, partition_path=None, scaler=None, labels_csv=None):
+    def __init__(self, path, partition_path=None, scaler=None):
         self.path = path
         self.partition_path = partition_path
-        self.labels_csv = labels_csv
 
         self.load_openmic()
 
@@ -62,18 +61,15 @@ class OpenMicDataset(Dataset):
         partition_idxs = np.where(np.isin(df_part[0].tolist(), self.sample_keys))
 
         self.features = openmic['X'][partition_idxs]
-        self.labels = openmic['Y_mask'][partition_idxs]
-
-        if self.labels_csv is not None:
-            # compute class counts
-            df_labels = pd.read_csv(self.labels_csv)
-            df_labels = df_labels[df_labels['sample_key'].isin(df_part[0].tolist())]
-            self.class_counts = df_labels.groupby('instrument').count()['sample_key'].tolist()
+        self.observations = openmic['Y_mask'][partition_idxs]
+        gt_probs = openmic['Y_true'][partition_idxs]
+        self.labels = np.where(gt_probs > 0.5, 1, 0)
 
     def __getitem__(self, idx):
         sample = {
             "features": self.features[idx],
-            "labels": self.labels[idx]
+            "labels": self.labels[idx],
+            "observations": self.observations[idx]
         }
         return sample
 
