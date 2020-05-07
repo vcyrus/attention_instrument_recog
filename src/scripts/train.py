@@ -48,7 +48,7 @@ if __name__ == "__main__":
     optimizer = Adam(model.parameters(), args.lr, weight_decay=args.weight_decay)
 
 #    criterion = nn.BCEWithLogitsLoss()
-    criterion = PartialBCE()
+    criterion = PartialBCE(device=device)
 
     model = train(
         datasets, 

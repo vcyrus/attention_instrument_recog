@@ -37,14 +37,16 @@ class AttentionModel(Model):
         z2 = self.dropout(F.relu(self.bn2(self.fc2(z1))))
         z3 = self.fc3(z2)
         embedding = self.dropout(F.relu(self.bn3(z3)))
+
         residual = torch.add(batch, embedding)
+
         
         score = self.score(residual)
         if self.attention:
             attn_weights = self.attn(residual)
             score = torch.sum(torch.mul(attn_weights, score), dim=1)
         else:
-            score = torch.mean(self.score(score), dim=1)
+            score = torch.mean(score, dim=1)
 
         return score.view((-1, self.n_classes))
 
@@ -55,5 +57,5 @@ class AttentionLayer(nn.Module):
     
     def forward(self, z):
         weights = torch.matmul(z, self.attn.weight.t())
-        
-        return F.softmax(weights, dim=2)
+
+        return F.softmax(weights, dim=1)

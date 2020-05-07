@@ -29,7 +29,7 @@ def evaluate(model, device, dataset, label_to_int):
         outputs = torch.sigmoid(model(X))
 
         # threshold
-        outputs = (outputs >= 0.5).float() * 1
+        outputs = (outputs > 0.5).float() * 1
         outputs = outputs.cpu().numpy()
 
         y_true[i] = y[0]
