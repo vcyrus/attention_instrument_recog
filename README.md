@@ -1,9 +1,6 @@
 # An Attention Mechanism for Musical Instrument Recognition
 - A reproduction of the paper ['An Attention Mechansim for Musical Instrument Recognition'](https://arxiv.org/abs/1907.04294) by S Gururani, M Sharma, A Lerch (ISMIR 2019)
 
-## TODO
-- [ ] implement partial BCE
-
 ## Installation
 ### Downloading the dataset and cloning
 - Download the [OpenMic dataset](https://github.com/cosmir/openmic-2018)
