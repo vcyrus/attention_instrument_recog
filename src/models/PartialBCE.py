@@ -8,6 +8,8 @@ class PartialBCE(nn.Module):
         for each label in each batch, where an observation is where there
         exists a known pos/neg observation for the class
         Hyperparameters alpha, beta, gamma from the paper
+
+        Applies mask to loss values that have no observations (sets them to 0)
     '''
 
     def __init__(self, device=None):
@@ -17,14 +19,24 @@ class PartialBCE(nn.Module):
         self.gamma = -1
         self.device = device
 
-    def forward(self, y_pred, y_true, y_obs):
-        obs_weight = y_obs.float()
+    def forward(self, y_pred, y_true, y_mask):
+        mask = y_mask.float()
 
         loss = F.binary_cross_entropy_with_logits(y_pred, y_true, reduction='none')
-        loss = loss * obs_weight
 
-        n_obs = torch.sum(y_obs, dim=1)
-        n_labels = y_obs.shape[1]
-        p_obs = n_obs / torch.full((y_obs.shape[0], ), n_labels).to(self.device)
-        p_obs = torch.pow(p_obs, self.gamma) / n_labels
-        return torch.mean(p_obs * torch.sum(loss, dim=1))
+        # apply the observation mask to the loss
+        loss = loss * mask
+
+        # number of observations provided by the mask
+        n_observation = torch.sum(mask, dim=1)
+
+        # total number of labels
+        n_labels = mask.shape[1]
+
+        # proportion of labels that have observations
+        p_obs = n_observation / torch.full((mask.shape[0], ), n_labels).to(self.device)
+
+        # loss normalization term from the paper
+        p_obs_normalizer = torch.pow(p_obs, self.gamma) / n_labels
+
+        return torch.mean(p_obs_normalizer * torch.sum(loss, dim=1))
